@@ -67,6 +67,10 @@ export default function App() {
     alert("No path found!");
   };
 
+  const resetPath = () => {
+    setPath([]);
+  };
+
   return (
     <div className="container">
       <h1>🐶 Corgi Path Finder</h1>
@@ -99,7 +103,10 @@ export default function App() {
         )}
       </div>
 
-      <button onClick={findPath}>Find Path</button>
+      <div style={{ display: "flex", gap: "10px", justifyContent: "center" }}>
+        <button onClick={findPath}>Find Path</button>
+        <button onClick={resetPath}>Reset Path</button>
+      </div>
     </div>
   );
 }
