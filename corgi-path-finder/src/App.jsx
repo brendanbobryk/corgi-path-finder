@@ -13,25 +13,24 @@ export default function App() {
   const [grid, setGrid] = useState(() => createGrid(6));
   const [path, setPath] = useState([]);
   const [isDragging, setIsDragging] = useState(false);
-  const [didDrag, setDidDrag] = useState(false);
+  const [experimentalDrag, setExperimentalDrag] = useState(false);
 
   const start = [0, 0];
   const end = [gridSize - 1, gridSize - 1];
 
+  // Stop dragging if mouse released anywhere
   useEffect(() => {
-    const stopDrag = () => {
-      setIsDragging(false);
-    };
-    window.addEventListener("mouseup", stopDrag);
-    return () => window.removeEventListener("mouseup", stopDrag);
+    const handleMouseUp = () => setIsDragging(false);
+    window.addEventListener("mouseup", handleMouseUp);
+    return () => window.removeEventListener("mouseup", handleMouseUp);
   }, []);
 
+  const isProtected = (r, c) =>
+    (r === start[0] && c === start[1]) ||
+    (r === end[0] && c === end[1]);
+
   const toggleCell = (r, c) => {
-    if (
-      (r === start[0] && c === start[1]) ||
-      (r === end[0] && c === end[1])
-    )
-      return;
+    if (isProtected(r, c)) return;
 
     setGrid((prev) =>
       prev.map((row, i) =>
@@ -43,17 +42,11 @@ export default function App() {
   };
 
   const paintObstacle = (r, c) => {
-    if (
-      (r === start[0] && c === start[1]) ||
-      (r === end[0] && c === end[1])
-    )
-      return;
+    if (isProtected(r, c)) return;
 
     setGrid((prev) =>
       prev.map((row, i) =>
-        row.map((cell, j) =>
-          i === r && j === c ? 1 : cell
-        )
+        row.map((cell, j) => (i === r && j === c ? 1 : cell))
       )
     );
   };
@@ -64,7 +57,7 @@ export default function App() {
 
     while (queue.length) {
       const currentPath = queue.shift();
-      const [r, c] = currentPath[currentPath.length - 1];
+      const [r, c] = currentPath.at(-1);
 
       if (r === end[0] && c === end[1]) {
         setPath(currentPath);
@@ -112,7 +105,7 @@ export default function App() {
   return (
     <div className="container">
       <h1>🐶 Corgi Path Finder</h1>
-      <p>Click to toggle • Click & drag to paint</p>
+      <p>Click to toggle tiles. Drag feature is experimental.</p>
 
       <div style={{ marginBottom: "10px" }}>
         <label>
@@ -128,6 +121,14 @@ export default function App() {
             ))}
           </select>
         </label>
+        <label style={{ marginLeft: "20px" }}>
+          <input
+            type="checkbox"
+            checked={experimentalDrag}
+            onChange={() => setExperimentalDrag((prev) => !prev)}
+          />{" "}
+          Enable Experimental Drag
+        </label>
       </div>
 
       <div
@@ -140,9 +141,7 @@ export default function App() {
           row.map((cell, c) => {
             const isStart = r === start[0] && c === start[1];
             const isEnd = r === end[0] && c === end[1];
-            const isPath = path.some(
-              ([pr, pc]) => pr === r && pc === c
-            );
+            const isPath = path.some(([pr, pc]) => pr === r && pc === c);
 
             return (
               <div
@@ -152,18 +151,18 @@ export default function App() {
                   ${isPath ? "path" : ""}
                   ${isStart ? "start" : ""}
                   ${isEnd ? "end" : ""}`}
+                onClick={() => {
+                  // Always toggle on click
+                  toggleCell(r, c);
+                }}
                 onMouseDown={() => {
+                  if (!experimentalDrag) return;
                   setIsDragging(true);
-                  setDidDrag(false);
+                  paintObstacle(r, c);
                 }}
                 onMouseEnter={() => {
-                  if (isDragging) {
-                    setDidDrag(true);
-                    paintObstacle(r, c);
-                  }
-                }}
-                onClick={() => {
-                  if (!didDrag) toggleCell(r, c);
+                  if (!experimentalDrag) return;
+                  if (isDragging) paintObstacle(r, c);
                 }}
               >
                 {isStart && "🐶"}
