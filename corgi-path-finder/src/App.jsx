@@ -71,6 +71,11 @@ export default function App() {
     setPath([]);
   };
 
+  const resetObstacles = () => {
+    setGrid(createGrid());
+    setPath([]);
+  };
+
   return (
     <div className="container">
       <h1>🐶 Corgi Path Finder</h1>
@@ -103,9 +108,16 @@ export default function App() {
         )}
       </div>
 
-      <div style={{ display: "flex", gap: "10px", justifyContent: "center" }}>
+      <div
+        style={{
+          display: "flex",
+          gap: "10px",
+          justifyContent: "center",
+        }}
+      >
         <button onClick={findPath}>Find Path</button>
         <button onClick={resetPath}>Reset Path</button>
+        <button onClick={resetObstacles}>Reset Obstacles</button>
       </div>
     </div>
   );
