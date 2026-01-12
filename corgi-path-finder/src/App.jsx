@@ -1,18 +1,20 @@
 import { useState } from "react";
 
-const GRID_SIZE = 6;
+const MIN_SIZE = 4;
+const MAX_SIZE = 10;
 
-const createGrid = () =>
-  Array.from({ length: GRID_SIZE }, () =>
-    Array.from({ length: GRID_SIZE }, () => 0)
+const createGrid = (size) =>
+  Array.from({ length: size }, () =>
+    Array.from({ length: size }, () => 0)
   );
 
 export default function App() {
-  const [grid, setGrid] = useState(createGrid);
+  const [gridSize, setGridSize] = useState(6);
+  const [grid, setGrid] = useState(() => createGrid(6));
   const [path, setPath] = useState([]);
 
   const start = [0, 0];
-  const end = [GRID_SIZE - 1, GRID_SIZE - 1];
+  const end = [gridSize - 1, gridSize - 1];
 
   const toggleCell = (r, c) => {
     if (
@@ -52,8 +54,8 @@ export default function App() {
         if (
           nr >= 0 &&
           nc >= 0 &&
-          nr < GRID_SIZE &&
-          nc < GRID_SIZE &&
+          nr < gridSize &&
+          nc < gridSize &&
           grid[nr][nc] === 0 &&
           !visited.has([nr, nc].toString())
         ) {
@@ -72,7 +74,14 @@ export default function App() {
   };
 
   const resetObstacles = () => {
-    setGrid(createGrid());
+    setGrid(createGrid(gridSize));
+    setPath([]);
+  };
+
+  const handleSizeChange = (e) => {
+    const newSize = Number(e.target.value);
+    setGridSize(newSize);
+    setGrid(createGrid(newSize));
     setPath([]);
   };
 
@@ -81,7 +90,28 @@ export default function App() {
       <h1>🐶 Corgi Path Finder</h1>
       <p>Click tiles to place obstacles, then find a path!</p>
 
-      <div className="grid">
+      <div style={{ marginBottom: "10px" }}>
+        <label>
+          Grid Size:{" "}
+          <select value={gridSize} onChange={handleSizeChange}>
+            {Array.from(
+              { length: MAX_SIZE - MIN_SIZE + 1 },
+              (_, i) => MIN_SIZE + i
+            ).map((size) => (
+              <option key={size} value={size}>
+                {size} x {size}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+
+      <div
+        className="grid"
+        style={{
+          gridTemplateColumns: `repeat(${gridSize}, 50px)`,
+        }}
+      >
         {grid.map((row, r) =>
           row.map((cell, c) => {
             const isStart = r === start[0] && c === start[1];
@@ -113,6 +143,7 @@ export default function App() {
           display: "flex",
           gap: "10px",
           justifyContent: "center",
+          marginTop: "10px",
         }}
       >
         <button onClick={findPath}>Find Path</button>
