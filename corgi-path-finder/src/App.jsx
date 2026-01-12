@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const MIN_SIZE = 4;
 const MAX_SIZE = 10;
@@ -12,9 +12,20 @@ export default function App() {
   const [gridSize, setGridSize] = useState(6);
   const [grid, setGrid] = useState(() => createGrid(6));
   const [path, setPath] = useState([]);
+  const [isDragging, setIsDragging] = useState(false);
+  const [didDrag, setDidDrag] = useState(false);
 
   const start = [0, 0];
   const end = [gridSize - 1, gridSize - 1];
+
+  // Stop dragging if mouse released anywhere
+  useEffect(() => {
+    const stopDrag = () => {
+      setIsDragging(false);
+    };
+    window.addEventListener("mouseup", stopDrag);
+    return () => window.removeEventListener("mouseup", stopDrag);
+  }, []);
 
   const toggleCell = (r, c) => {
     if (
@@ -27,6 +38,22 @@ export default function App() {
       prev.map((row, i) =>
         row.map((cell, j) =>
           i === r && j === c ? (cell === 0 ? 1 : 0) : cell
+        )
+      )
+    );
+  };
+
+  const paintObstacle = (r, c) => {
+    if (
+      (r === start[0] && c === start[1]) ||
+      (r === end[0] && c === end[1])
+    )
+      return;
+
+    setGrid((prev) =>
+      prev.map((row, i) =>
+        row.map((cell, j) =>
+          i === r && j === c ? 1 : cell
         )
       )
     );
@@ -88,7 +115,7 @@ export default function App() {
   return (
     <div className="container">
       <h1>🐶 Corgi Path Finder</h1>
-      <p>Click tiles to place obstacles, then find a path!</p>
+      <p>Click to toggle, or click and drag to paint obstacles</p>
 
       <div style={{ marginBottom: "10px" }}>
         <label>
@@ -128,7 +155,20 @@ export default function App() {
                   ${isPath ? "path" : ""}
                   ${isStart ? "start" : ""}
                   ${isEnd ? "end" : ""}`}
-                onClick={() => toggleCell(r, c)}
+                onMouseDown={() => {
+                  setIsDragging(true);
+                  setDidDrag(false);
+                  paintObstacle(r, c);
+                }}
+                onMouseEnter={() => {
+                  if (isDragging) {
+                    setDidDrag(true);
+                    paintObstacle(r, c);
+                  }
+                }}
+                onClick={() => {
+                  if (!didDrag) toggleCell(r, c);
+                }}
               >
                 {isStart && "🐶"}
                 {isEnd && "🦴"}
