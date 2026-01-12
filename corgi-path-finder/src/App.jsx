@@ -18,7 +18,6 @@ export default function App() {
   const start = [0, 0];
   const end = [gridSize - 1, gridSize - 1];
 
-  // Stop dragging if mouse released anywhere
   useEffect(() => {
     const stopDrag = () => {
       setIsDragging(false);
@@ -96,9 +95,7 @@ export default function App() {
     alert("No path found!");
   };
 
-  const resetPath = () => {
-    setPath([]);
-  };
+  const resetPath = () => setPath([]);
 
   const resetObstacles = () => {
     setGrid(createGrid(gridSize));
@@ -115,7 +112,7 @@ export default function App() {
   return (
     <div className="container">
       <h1>🐶 Corgi Path Finder</h1>
-      <p>Click to toggle, or click and drag to paint obstacles</p>
+      <p>Click to toggle • Click & drag to paint</p>
 
       <div style={{ marginBottom: "10px" }}>
         <label>
@@ -158,7 +155,6 @@ export default function App() {
                 onMouseDown={() => {
                   setIsDragging(true);
                   setDidDrag(false);
-                  paintObstacle(r, c);
                 }}
                 onMouseEnter={() => {
                   if (isDragging) {
